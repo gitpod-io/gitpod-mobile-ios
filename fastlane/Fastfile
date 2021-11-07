@@ -1,0 +1,314 @@
+require 'time'
+require 'commander'
+require 'pathname'
+
+update_fastlane
+
+desc 'Displays the commits between working tree and the last beta/release tag'
+lane :changelog do |options|
+  tag = options[:tag]
+
+  puts_changelog(tag: last_release)
+  puts_changelog(tag: last_beta)
+
+end
+
+desc 'Fetches the distribution certificates and provisioning profiles to compile the app for development, adhoc & distribution'
+lane :certificates do
+
+  match(type: 'development', readonly: true)
+  match(type: 'adhoc', readonly: true)
+  match(type: 'appstore', readonly: true)
+
+end
+
+desc 'Build production and debug build'
+lane :build do
+
+  changelog
+  certificates
+
+  sh('echo building...')
+end
+
+
+desc 'Submit a new version to iTunes Connect'
+desc ''
+desc 'If on main; it will do the following: '
+desc '- Displays the commits between working tree and the last beta/release tag'
+desc '- Fetches distribution certificates and provisioning profiles'
+desc '- Upload screenshots + app metadata'
+desc '- Build, sign and upload the app release'
+desc '- Do a build version bump and push it'
+desc 'The application will *not* be submitted for review or automatically released'
+desc ''
+desc 'If on develop; it will do the following: '
+desc '- Displays the commits between working tree and the last beta/release tag'
+desc '- Make sure the profiles are up to date and download the latest one'
+desc '- Do a build version bump and push it'
+desc '- Build, sign and upload the app for testing'
+desc 'The application will *not* be submitted for review or automatically released to external testers'
+desc ''
+lane :deploy do
+
+  puts case git_branch
+  when 'main', 'release'
+
+    # slack(
+    #   message: 'App Store build incoming',
+    #   channel: '#mobile',
+    #   default_payloads: [:git_author]
+    # )
+
+    build
+
+    tag_release
+
+    deploy_itunesconnect
+
+    metadata
+    screenshots
+
+  when 'develop', 'beta'
+
+    build
+
+    tag_beta
+
+    devices
+
+    deploy_itunesconnect
+
+  else
+    # failure
+  end
+
+end
+
+private_lane :deploy_itunesconnect do
+
+  sigh(
+    adhoc: true, # Setting this flag will generate AdHoc profiles instead of App Store Profiles
+    force: true, # Renew provisioning profiles regardless of its state - to automatically add all devices for ad hoc profiles
+  )
+
+  resign(
+  )
+
+  puts case git_branch
+  when 'main', 'release'
+
+    deliver(
+      metadata_path: './metadata', # Path to the folder containing the metadata files
+      skip_screenshots: true, # Don't upload the screenshots
+      skip_metadata	: true, # Don't upload the metadata (e.g. title, description). This will still upload screenshots
+      automatic_release: true, # Should the app be automatically released once it's approved? (Can not be used together with auto_release_date)
+      submit_for_review: false, # Submit the new version for Review after uploading everything
+      reject_if_possible: true, # Rejects the previously submitted build if it's in a state where it's possible
+    )
+
+  when 'develop', 'beta'
+
+    pilot(
+      testers_file_path: './Fastlane/testers.csv' # Path to a CSV file of testers
+      reject_build_waiting_for_review: true, # Expire previous if it's 'waiting for review'
+      distribute_external: true,  # Should the build be distributed to external testers? If set to true, use of groups option is required
+    )
+
+  else
+    # failure
+  end
+
+  # slack_message(message: 'New version of the app successfully deployed to iTunes Connect! :tada: :tada:', success: true, payload: {})
+
+end
+
+desc 'Registers developer devices with iTunes Connect'
+lane :devices do
+
+  register_devices(
+    devices_file: './Fastlane/iTunesConnectDevices' # Provide a path to a file with the devices to register. For the format of the file see the examples
+  )
+
+end
+
+desc 'Upload application metadata to iTunes Connect'
+lane :metadata do
+
+  metadata_itunesconnect
+
+end
+
+private_lane :metadata_itunesconnect do
+
+  deliver(
+    metadata_path: './metadata',
+    force: false, # Skip verification of HTML preview file
+    skip_binary_upload: true, # Skip uploading an ipa or pkg to App Store Connect
+    skip_screenshots: true, # Don't upload the screenshots
+    skip_metadata: false, # Upload the metadata (e.g. title, description).
+    automatic_release: false, # Should the app be automatically released once it's approved? (Can not be used together with auto_release_date)
+    submit_for_review: false # Submit the new version for Review after uploading everything
+  )
+
+end
+
+desc 'Upload application screenshots to iTunes Connect'
+lane :screenshots do
+
+  screenshots_itunesconnect
+
+end
+
+private_lane :screenshots_itunesconnect do
+
+  deliver(
+    metadata_path: './metadata', # Path to the folder containing the metadata files
+    screenshots_path: './metadata/screenshots', # Path to the folder containing the screenshots
+    force: true, # Skip verification of HTML preview file
+    skip_binary_upload: true, # Skip uploading an ipa or pkg to App Store Connect
+    skip_screenshots: false, # Upload the screenshots
+    skip_metadata: true, # Don't upload the metadata (e.g. title, description).
+    automatic_release: false, # Should the app be automatically released once it's approved? (Can not be used together with auto_release_date)
+    submit_for_review: false # Submit the new version for Review after uploading everything
+  )
+
+end
+
+
+private_lane :puts_changelog do |options|
+  tag = options[:tag]
+
+  puts compare_url(tag: tag)
+
+  puts changelog_from_git_commits(
+    between: [tag, 'HEAD'],
+    pretty: '- (%ae) %s',
+    match_lightweight_tag: false,
+    include_merges: false
+  )
+
+end
+
+desc 'Push the build to the beta branch and tag the build'
+private_lane :tag_beta do |options|
+
+  tag_name = 'betas/#{build_version}'
+
+  sh('git fetch')
+  sh('git stash')
+  sh('git checkout')
+  sh('git pull origin develop')
+  sh('git checkout beta')
+  sh('git merge develop')
+  sh('git stash apply')
+
+  push_to_git_remote(
+      local_branch: 'beta',
+      remote_branch: 'beta'
+  )
+
+  add_git_tag(tag: tag_name)
+  sh('git push origin --tags')
+
+end
+
+desc 'Push the build to the release branch and tag the build'
+private_lane :tag_release do |options|
+  tag_name = 'releases/#{build_version}'
+
+  sh('git fetch')
+  sh('git stash')
+  sh('git checkout')
+  sh('git pull origin release')
+  sh('git checkout main')
+  sh('git merge release')
+  sh('git stash apply')
+
+  push_to_git_remote(
+      local_branch: 'release',
+      remote_branch: 'release'
+  )
+
+  add_git_tag(tag: tag_name)
+  sh('git push origin --tags')
+
+end
+
+private_lane :slack_message do |options|
+  message = options[:message]
+  success = options[:success]
+  payload = options[:payload]
+
+  slack(
+    message: message,
+    channel: '#mobile',
+    success: success,
+    payload: payload)
+end
+
+after_all do |lane|
+  ship_it
+  notify('Lane #{lane} completed successfully!')
+end
+
+error do |lane, exception|
+  puts '\n(╯°□°）╯︵ ┻━┻\n'.red
+  notify('Lane #{lane} failed to complete')
+end
+
+# Helper functions
+def build_version
+  return sh('date '+%s'').strip
+end
+
+def last_beta
+  return sh('git describe origin/develop --match=\'beta*\' --tags --abbrev=0').strip
+end
+
+def last_release
+  return sh('git describe origin/main --match=\'release*\' --tags --abbrev=0').strip
+end
+
+def compare_url(options={})
+  tag = options[:tag]
+  head = last_git_commit[:abbreviated_commit_hash]
+
+  return 'https://github.com/gitpod-io/unofficial-gitpod-mobile-ios-prototype/compare/#{tag}...#{head}'
+end
+
+def ship_it
+  rand = Random.rand(0..1)
+  if rand == 0
+    squirrel
+  elsif rand == 1
+    boat
+  end
+end
+
+def squirrel
+  puts '
+    !!!!
+  !!!!!!!!
+!!!!!!!!!!!   O_O
+!!!  !!!!!!! /@ @\\
+      !!!!!! \\ x /
+      !!!!!!/ m  !m
+       !!!!/ __  |
+       !!!!|/  \\__
+        !!!\\______\\
+  '
+end
+
+def boat
+  puts '
+     .  o ..
+     o . o o.o
+          ...oo
+            __[]__
+         __|_o_o_o\__
+         \\\'\'\'\'\'\'\'\'\'\'/
+          \\. ..  . /
+     ^^^^^^^^^^^^^^^^^^^^
+  '
+end

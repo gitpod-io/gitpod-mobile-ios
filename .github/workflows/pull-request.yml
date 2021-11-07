@@ -1,0 +1,31 @@
+name: Pull Request
+
+on:
+  pull_request:
+  push:
+    branches:
+      - '*'
+      - '!main'
+
+env:
+  LANG: en_US.UTF-8
+  
+  # iOS Release
+  APPLE_KEY_PASSWORD: ${{ secrets.APPLE_KEY_PASSWORD }}       # Password to private key file
+  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID}}                  # The organization's team id in the Apple Developer portal
+  
+  # Notifications
+  SLACK_URL: ${{ secrets.SLACK_URL }}
+  SLACK_CHANNEL: '#mobile'
+
+jobs:
+  build:
+    runs-on: macos
+    timeout-minutes: 45
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Bootstrap developer environment
+      run: echo make bootstrap # Disabled until GitHub Actions Runner released for M1
+    - name: Lint the repository
+      run: make lint

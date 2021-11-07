@@ -1,0 +1,41 @@
+---
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.0.1
+      hooks:
+#          - id: check-added-large-files
+          - id: check-executables-have-shebangs
+          - id: check-json
+          - id: check-merge-conflict
+          - id: check-shebang-scripts-are-executable
+          - id: check-shebang-scripts-are-executable
+          - id: check-symlinks
+          - id: check-toml
+          - id: check-xml
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: forbid-new-submodules
+          - id: mixed-line-ending
+          - id: pretty-format-json
+          - id: trailing-whitespace
+          - id: trailing-whitespace
+    - repo: https://github.com/nicklockwood/SwiftFormat
+      rev: 0.48.17
+      hooks:
+          - id: swiftformat
+            name: SwiftFormat
+            description: Check swift files for formating issues with SwiftFormat
+            entry: swiftformat
+            language: swift
+            types: [swift]
+    - repo: https://github.com/noahsark769/xcodeproj-sort-pre-commit-hook
+      rev: v1.1.0
+      hooks:
+          - id: xcodeproj-sort
+            args: [--groups-position=above]
+    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+      rev: 0.1.0 # or specific tag
+      hooks:
+          - id: yamlfmt

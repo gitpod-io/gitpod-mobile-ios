@@ -1,0 +1,18 @@
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addBadge: true
+    addLabel: true
+    
+vscode:
+  extensions:
+    - EditorConfig.EditorConfig
+    - Equinusocio.vsc-material-theme
+    - PKief.material-icon-theme
+    - redhat.vscode-yaml
+    - streetsidesoftware.code-spell-checker
+    - timonwong.shellcheck
