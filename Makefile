@@ -33,8 +33,10 @@ restore:
 
 build:
 	arch -arm64 carthage build
-	arch -arm64 bundle exec fastlane
 	cd browser-extension && yarn install && cd ..
+
+release:
+	arch -arm64 bundle exec fastlane
 
 lint:
 	arch -arm64 pre-commit run
