@@ -34,7 +34,7 @@ restore:
 
 build:
 	arch -arm64 carthage build
-	cd browser-extension && yarn install && cd ..
+	cd browser-extension && npm run build && cd ..
 
 release:
 	arch -arm64 bundle exec fastlane
