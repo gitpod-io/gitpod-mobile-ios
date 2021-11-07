@@ -29,6 +29,7 @@ bootstrap:
 
 restore:
 	arch -arm64 carthage bootstrap
+        cd browser-extension && yarn install && cd ..
 
 build:
 	arch -arm64 carthage build
