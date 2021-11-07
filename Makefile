@@ -15,20 +15,28 @@ help:
 all: restore lint build
 
 bootstrap:
-	brew install pre-commit && brew upgrade pre-commit
-	brew install swiftformat && brew upgrade swiftformat
-	brew install carthage && brew upgrade carthage
-	brew install fastlane && brew upgrade fastlane
-	sudo gem install bundler
-	pre-commit install
-	pre-commit autoupdate
-	pre-commit run
+	git submodule sync --recursive && git submodule update --init --recursive
+	arch -arm64 brew install pre-commit && arch -arm64 brew upgrade pre-commit
+	arch -arm64 brew install npm && arch -arm64 brew upgrade npm
+	arch -arm64 brew install yarn && arch -arm64 brew upgrade yarn
+	arch -arm64 brew install typescript && arch -arm64 brew upgrade typescript
+	arch -arm64 brew install swiftformat && arch -arm64 brew upgrade swiftformat
+	arch -arm64 brew install carthage && arch -arm64 brew upgrade carthage
+	arch -arm64 brew install fastlane && arch -arm64 brew upgrade fastlane
+	arch -arm64 sudo gem install bundler
+	arch -arm64 pre-commit install
+	arch -arm64 pre-commit autoupdate
+	arch -arm64 pre-commit run
 
 restore:
 	arch -arm64 carthage bootstrap
+	cd browser-extension && yarn install && cd ..
 
 build:
 	arch -arm64 carthage build
+	cd browser-extension && npm run build && cd ..
+
+release:
 	arch -arm64 bundle exec fastlane
 
 lint:

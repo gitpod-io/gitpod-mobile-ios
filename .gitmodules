@@ -1,0 +1,3 @@
+[submodule "browser-extension"]
+	path = browser-extension
+	url = git@github.com:gitpod-io/browser-extension.git
