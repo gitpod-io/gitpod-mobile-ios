@@ -21,7 +21,13 @@
 
     "content_scripts": [{
         "js": [ "content.js" ],
-        "matches": [ "*://example.com/*" ]
+        "matches": [
+            "*://*.github.com/*",
+            "*://*.gitlab.com/*",
+            "*://*.bitbucket.org/*",
+            "*://*.gitlab.cn/*",
+            "*://*.gitpod.io/*"
+        ]
     }],
 
     "browser_action": {
