@@ -15,6 +15,7 @@ help:
 all: restore lint build
 
 bootstrap:
+	git submodule sync --recursive && git submodule update --init --recursive
 	brew install pre-commit && brew upgrade pre-commit
 	brew install npm && brew upgrade npm
 	brew install swiftformat && brew upgrade swiftformat
