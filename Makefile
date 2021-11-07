@@ -16,6 +16,7 @@ all: restore lint build
 
 bootstrap:
 	brew install pre-commit && brew upgrade pre-commit
+	brew install npm && brew upgrade npm
 	brew install swiftformat && brew upgrade swiftformat
 	brew install carthage && brew upgrade carthage
 	brew install fastlane && brew upgrade fastlane
