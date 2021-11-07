@@ -18,6 +18,7 @@ bootstrap:
 	git submodule sync --recursive && git submodule update --init --recursive
 	brew install pre-commit && brew upgrade pre-commit
 	brew install npm && brew upgrade npm
+	brew install yarn && brew upgrade yarn
 	brew install swiftformat && brew upgrade swiftformat
 	brew install carthage && brew upgrade carthage
 	brew install fastlane && brew upgrade fastlane
