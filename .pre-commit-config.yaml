@@ -10,7 +10,6 @@ repos:
           - id: check-json
           - id: check-merge-conflict
           - id: check-shebang-scripts-are-executable
-          - id: check-shebang-scripts-are-executable
           - id: check-symlinks
           - id: check-toml
           - id: check-xml
@@ -18,8 +17,7 @@ repos:
           - id: end-of-file-fixer
           - id: forbid-new-submodules
           - id: mixed-line-ending
-          - id: pretty-format-json
-          - id: trailing-whitespace
+#          - id: pretty-format-json
           - id: trailing-whitespace
     - repo: https://github.com/nicklockwood/SwiftFormat
       rev: 0.48.18
@@ -30,11 +28,11 @@ repos:
             entry: swiftformat
             language: swift
             types: [swift]
-    - repo: https://github.com/noahsark769/xcodeproj-sort-pre-commit-hook
-      rev: v1.1.0
-      hooks:
-          - id: xcodeproj-sort
-            args: [--groups-position=above]
+#    - repo: https://github.com/noahsark769/xcodeproj-sort-pre-commit-hook
+#      rev: v1.1.0
+#      hooks:
+#          - id: xcodeproj-sort
+#            args: [--groups-position=above]
     - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
       rev: 0.1.0 # or specific tag
       hooks:
