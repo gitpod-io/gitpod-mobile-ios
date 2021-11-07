@@ -19,6 +19,7 @@ bootstrap:
 	arch -arm64 brew install pre-commit && arch -arm64 brew upgrade pre-commit
 	arch -arm64 brew install npm && arch -arm64 brew upgrade npm
 	arch -arm64 brew install yarn && arch -arm64 brew upgrade yarn
+	arch -arm64 brew install typescript && arch -arm64 brew upgrade typescript
 	arch -arm64 brew install swiftformat && arch -arm64 brew upgrade swiftformat
 	arch -arm64 brew install carthage && arch -arm64 brew upgrade carthage
 	arch -arm64 brew install fastlane && arch -arm64 brew upgrade fastlane
