@@ -15,7 +15,8 @@
     },
 
     "background": {
-        "scripts": [ "bundles/background.bundle.js" ]
+        "scripts": [ "bundles/background.bundle.js" ],
+        "persistent": false
     },
 
     "content_scripts": [{
